@@ -63,13 +63,13 @@ cat results/toy/summary.md
 
 ### Example output
 
-The `summary.md` report from that toy run looks like this (latency will vary by machine):
+The `summary.md` report is a table in this shape — run the commands above to fill it with your own numbers:
 
 | Router | Rubric agreement | Under-route | Over-route | Median route ms | Stability | Failures |
 |---|---:|---:|---:|---:|---:|---:|
-| pi-auto-router | 50.0% | 43.3% | 6.7% | 18.06 | 100.0% | 0/30 |
+| pi-auto-router | …% | …% | …% | … | …% | …/30 |
 
-Plus a per-category agreement table and a list of prompts where the router gave inconsistent answers across repeats.
+Plus a per-category agreement table and a list of prompts where the router gave inconsistent answers across repeats. No official results are published yet.
 
 ### Run the full comparison
 
