@@ -61,13 +61,13 @@ python3 -m benchmark.runner --router auto --runs 1 --output results/toy
 cat results/toy/summary.md
 ```
 
-## Example output
+### Example output
 
-The `summary.md` report looks like this (illustrative toy-router run):
+The `summary.md` report from that toy run looks like this (latency will vary by machine):
 
 | Router | Rubric agreement | Under-route | Over-route | Median route ms | Stability | Failures |
 |---|---:|---:|---:|---:|---:|---:|
-| pi-auto-router | 50.0% | 40.0% | 10.0% | 17.39 | 100.0% | 0/30 |
+| pi-auto-router | 50.0% | 43.3% | 6.7% | 18.06 | 100.0% | 0/30 |
 
 Plus a per-category agreement table and a list of prompts where the router gave inconsistent answers across repeats.
 
