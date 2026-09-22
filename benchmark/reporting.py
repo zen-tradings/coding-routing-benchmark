@@ -41,8 +41,8 @@ def to_markdown(summary: dict) -> str:
             stability=fmt_pct(metrics["mean_stability"]),
             failures=f'{metrics["failure_count"]}/{metrics["total_decisions"]}',
         ))
-    lines += ["", "## Category rubric agreement", "", "| Router | " + " | ".join(sorted({category for metrics in summary["routers"].values() for category in metrics["categories"]})) + " |", "|---|" + "---:|" * len(lines[-1].split("|")[2:-1])]
     categories = sorted({category for metrics in summary["routers"].values() for category in metrics["categories"]})
+    lines += ["", "## Category rubric agreement", "", "| Router | " + " | ".join(categories) + " |", "|---|" + "---:|" * len(categories)]
     for router, metrics in summary["routers"].items():
         lines.append("| " + router + " | " + " | ".join(fmt_pct(metrics["categories"].get(category, {}).get("rubric_agreement")) for category in categories) + " |")
     lines += ["", "## Unstable prompts", ""]
