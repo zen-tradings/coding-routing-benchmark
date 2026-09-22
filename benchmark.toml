@@ -1,0 +1,17 @@
+[benchmark]
+runs = 3
+timeout_seconds = 10
+
+[models]
+low = "claude-haiku"
+mid = "claude-sonnet"
+high = "claude-opus"
+
+[routers.auto]
+enabled = true
+
+[routers.model]
+enabled = true
+
+[routers.jev]
+enabled = true
