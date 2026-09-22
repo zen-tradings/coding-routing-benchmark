@@ -2,7 +2,7 @@
 
 **Which AI model should handle this coding task?** This benchmark measures how well different *model routers* answer that question.
 
-A model router reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. A bad router either wastes money (always picks the biggest model) or hurts quality (sends hard tasks to a weak one). This repo gives every router the **same 30 realistic coding prompts** and the **same three model choices**, then records **which tier each router picked, how long it took, and how stable its answers are**.
+A model router reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. A bad router either wastes money (always picks the biggest model) or hurts quality (sends hard tasks to a weak one). This repo gives every router the **same 30 realistic coding prompts** and the **same three model choices**, then records **which model each router directly picked, how long it took, and how stable its answers are** — normalised into `LOW` / `MID` / `HIGH` tiers purely for scoring.
 
 > **Scope of v1:** routing decisions only. The selected model is never executed and no code quality is judged. Full design notes: [`PLAN.md`](PLAN.md).
 
@@ -16,14 +16,16 @@ A model router reads a developer's request and picks a model for it — cheap an
  Router A  Router B  Router C        every router sees the same choices:
    │          │          │           LOW → claude-haiku
    ▼          ▼          ▼           MID → claude-sonnet
- normalise to LOW/MID/HIGH,          HIGH → claude-opus
- record latency, repeat 3×
+ each router directly returns a     HIGH → claude-opus
+ model name → normalised to
+ LOW/MID/HIGH tier for scoring,
+ latency recorded, repeated 3×
               │
               ▼
  results.jsonl · summary.json · summary.md · metadata.json
 ```
 
-Whatever a router replies (`"haiku"`, `"claude-3-5-sonnet"`, `"HIGH"`, …) is normalised into one tier, so routers with different naming schemes compare directly.
+Routers answer with a **model name**, never a tier — whatever a router replies (`"haiku"`, `"claude-3-5-sonnet"`, `"HIGH"`, …) is mapped to one of the three canonical models, and that model maps to a tier for scoring. The tier labels exist only so routers with different naming schemes compare directly.
 
 **Metrics:** rubric agreement · under-routing (hard task → weak model, quality risk) · over-routing (easy task → strong model, cost waste) · decision latency (mean/median/p95) · stability across repeats · per-category breakdown. Failures (timeout, parse error, unknown model) are reported separately, never hidden. We call the main metric **rubric agreement**, not "accuracy" — expected tiers are human labels, not proven ground truth.
 
