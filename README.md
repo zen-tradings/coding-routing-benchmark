@@ -1,5 +1,8 @@
 # Coding Routing Benchmark
 
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 **Which AI model should handle this coding task?** This benchmark measures how well different *model routers* answer that question.
 
 A model router reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. A bad router either wastes money (always picks the biggest model) or hurts quality (sends hard tasks to a weak one). This repo gives every router the **same 30 realistic coding prompts** and the **same three model choices**, then records **which model each router directly picked, how long it took, and how stable its answers are** — normalised into `LOW` / `MID` / `HIGH` tiers purely for scoring.
@@ -16,7 +19,7 @@ A model router reads a developer's request and picks a model for it — cheap an
  Router A  Router B  Router C        every router sees the same choices:
    │          │          │           LOW → claude-haiku
    ▼          ▼          ▼           MID → claude-sonnet
- each router directly returns a     HIGH → claude-opus
+ each router directly returns a    HIGH → claude-opus
  model name → normalised to
  LOW/MID/HIGH tier for scoring,
  latency recorded, repeated 3×
@@ -57,6 +60,16 @@ export PI_AUTO_ROUTER_COMMAND='python3 toy_router.py'
 python3 -m benchmark.runner --router auto --runs 1 --output results/toy
 cat results/toy/summary.md
 ```
+
+## Example output
+
+The `summary.md` report looks like this (illustrative toy-router run):
+
+| Router | Rubric agreement | Under-route | Over-route | Median route ms | Stability | Failures |
+|---|---:|---:|---:|---:|---:|---:|
+| pi-auto-router | 50.0% | 40.0% | 10.0% | 17.39 | 100.0% | 0/30 |
+
+Plus a per-category agreement table and a list of prompts where the router gave inconsistent answers across repeats.
 
 ### Run the full comparison
 
@@ -113,3 +126,7 @@ python3 -m pytest
 ```
 
 Contributions welcome — especially new router adapters and rubric label reviews (open an issue; `dev_v1` changes go into `dev_v2`).
+
+## License
+
+[MIT](LICENSE)
