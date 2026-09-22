@@ -30,7 +30,14 @@ A model router reads a developer's request and picks a model for it — cheap an
 
 Routers answer with a **model name**, never a tier — whatever a router replies (`"haiku"`, `"claude-3-5-sonnet"`, `"HIGH"`, …) is mapped to one of the three canonical models, and that model maps to a tier for scoring. The tier labels exist only so routers with different naming schemes compare directly.
 
-**Metrics:** rubric agreement · under-routing (hard task → weak model, quality risk) · over-routing (easy task → strong model, cost waste) · decision latency (mean/median/p95) · stability across repeats · per-category breakdown. Failures (timeout, parse error, unknown model) are reported separately, never hidden. We call the main metric **rubric agreement**, not "accuracy" — expected tiers are human labels, not proven ground truth.
+### What is measured
+
+- **Rubric agreement** — did the router pick the tier the rubric expected? (deliberately not called "accuracy": expected tiers are human labels, not proven ground truth)
+- **Under-routing** — hard task → weak model (quality risk)
+- **Over-routing** — easy task → strong model (cost waste)
+- **Decision latency** — mean / median / p95, of the routing call only
+- **Stability** — same answer across repeats?
+- **Per-category breakdown** and **failure rate** (timeouts, parse errors, unknown models — reported separately, never hidden)
 
 ## Quick start
 
@@ -125,7 +132,13 @@ There is no single "winner" metric. Under-routing costs quality, over-routing co
 python3 -m pytest
 ```
 
-Contributions welcome — especially new router adapters and rubric label reviews (open an issue; `dev_v1` changes go into `dev_v2`).
+## Contributing
+
+Contributions welcome — especially:
+
+- **New router adapters** — see [Plugging in your own router](#plugging-in-your-own-router)
+- **Rubric label reviews** — open an issue rather than editing `prompts/dev_v1.jsonl`; the set is frozen and changes go into `dev_v2`
+- **Benchmark results** — include the run's `metadata.json` so results are reproducible
 
 ## License
 
