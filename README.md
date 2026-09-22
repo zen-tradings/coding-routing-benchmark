@@ -110,7 +110,7 @@ The set is **versioned benchmark data**: once results are published, `dev_v1` is
 
 ## Interpreting results
 
-There is no single "winner" metric. Under-routing costs quality, over-routing costs money — which matters more depends on you. Tier distribution (e.g. LOW 55% / MID 38% / HIGH 7%) is a router's *fingerprint*, not a score.
+There is no single "winner" metric. Under-routing costs quality, over-routing costs money — which matters more depends on you. A router's tier distribution (how often it picks LOW vs. MID vs. HIGH) is its *fingerprint*, not a score.
 
 ## Roadmap
 
