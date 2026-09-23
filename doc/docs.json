@@ -1,0 +1,33 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Coding Routing Benchmark",
+  "colors": {
+    "primary": "#2563EB",
+    "light": "#60A5FA",
+    "dark": "#1D4ED8"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Getting started",
+        "pages": ["index", "quickstart"]
+      },
+      {
+        "group": "Guides",
+        "pages": ["routers", "prompt-set", "metrics"]
+      }
+    ]
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/zen-tradings/coding-routing-benchmark"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/zen-tradings/coding-routing-benchmark"
+    }
+  }
+}
