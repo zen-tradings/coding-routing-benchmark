@@ -18,6 +18,19 @@ def test_prompt_score_and_tier_are_derived_from_dimensions():
     assert prompt.expected_tier == "MID"
 
 
+def test_prompt_can_use_explicit_reference_model_without_difficulty_rubric():
+    prompt = prompt_from_dict({
+        "id": "x",
+        "category": "quant_execution",
+        "prompt": "Implement the requested order-fill behavior and add regression tests.",
+        "reference_model": "claude-sonnet",
+        "reference_rationale": "The task spans a component and needs careful edge-case handling.",
+    })
+    assert prompt.expected_model == "claude-sonnet"
+    assert prompt.expected_tier == "MID"
+    assert prompt.reference_rationale.startswith("The task spans")
+
+
 def test_prompt_rejects_incorrect_declared_score():
     data = {"id": "x", "category": "qa", "prompt": "Explain.", "rubric": {"reasoning_depth": 0, "scope": 0, "context_requirement": 0, "risk": 0, "specialized_knowledge": 0}, "score": 2}
     try:

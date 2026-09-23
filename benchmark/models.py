@@ -37,12 +37,26 @@ class Prompt:
     id: str
     category: str
     prompt: str
-    rubric: Rubric
+    rubric: Rubric | None = None
     boundary: bool = False
+    reference_model: str | None = None
+    reference_rationale: str | None = None
 
     @property
     def expected_tier(self) -> str:
+        if self.reference_model:
+            return normalize_model_name(self.reference_model)[1]
+        if self.rubric is None:
+            raise ValueError(f"prompt {self.id} needs a reference model or rubric")
         return self.rubric.expected_tier
+
+    @property
+    def expected_model(self) -> str:
+        if self.reference_model:
+            return normalize_model_name(self.reference_model)[0]
+        if self.rubric is None:
+            raise ValueError(f"prompt {self.id} needs a reference model or rubric")
+        return TIER_TO_MODEL[self.rubric.expected_tier]
 
 
 @dataclass(frozen=True)
@@ -82,24 +96,56 @@ def normalize_model_name(value: Any) -> tuple[str, str]:
 
 
 def prompt_from_dict(value: dict[str, Any]) -> Prompt:
-    required = {"id", "category", "prompt", "rubric"}
+    required = {"id", "category", "prompt"}
     missing = required - value.keys()
     if missing:
         raise ValueError(f"prompt is missing fields: {sorted(missing)}")
-    rubric_data = value["rubric"]
-    if not isinstance(rubric_data, dict):
-        raise ValueError("rubric must be an object")
-    rubric_fields = ("reasoning_depth", "scope", "context_requirement", "risk", "specialized_knowledge")
-    if set(rubric_data) != set(rubric_fields):
-        raise ValueError("rubric must contain exactly the five scoring dimensions")
-    scores = {field: rubric_data[field] for field in rubric_fields}
-    if any(not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 2 for score in scores.values()):
-        raise ValueError("each rubric dimension must be an integer from 0 to 2")
-    rubric = Rubric(**scores)
-    if "score" in value and value["score"] != rubric.score:
-        raise ValueError(f"prompt {value.get('id')} has an incorrect score")
-    if "expected_tier" in value and value["expected_tier"] != rubric.expected_tier:
-        raise ValueError(f"prompt {value.get('id')} has an incorrect expected_tier")
     if not all(isinstance(value.get(field), str) and value[field].strip() for field in ("id", "category", "prompt")):
         raise ValueError("id, category, and prompt must be non-empty strings")
-    return Prompt(id=value["id"], category=value["category"], prompt=value["prompt"], rubric=rubric, boundary=bool(value.get("boundary", False)))
+
+    rubric = None
+    if "rubric" in value:
+        rubric_data = value["rubric"]
+        if not isinstance(rubric_data, dict):
+            raise ValueError("rubric must be an object")
+        rubric_fields = ("reasoning_depth", "scope", "context_requirement", "risk", "specialized_knowledge")
+        if set(rubric_data) != set(rubric_fields):
+            raise ValueError("rubric must contain exactly the five scoring dimensions")
+        scores = {field: rubric_data[field] for field in rubric_fields}
+        if any(not isinstance(score, int) or isinstance(score, bool) or not 0 <= score <= 2 for score in scores.values()):
+            raise ValueError("each rubric dimension must be an integer from 0 to 2")
+        rubric = Rubric(**scores)
+        if "score" in value and value["score"] != rubric.score:
+            raise ValueError(f"prompt {value.get('id')} has an incorrect score")
+    elif "score" in value:
+        raise ValueError("score requires a rubric")
+
+    reference_value = value.get("reference_model")
+    if reference_value is not None:
+        reference_model, reference_tier = normalize_model_name(reference_value)
+        if reference_model not in AVAILABLE_MODELS:
+            raise ValueError(f"prompt {value.get('id')} has a model outside the available model pool")
+        if "expected_tier" in value and value["expected_tier"] != reference_tier:
+            raise ValueError(f"prompt {value.get('id')} has an expected_tier inconsistent with reference_model")
+    else:
+        if rubric is None:
+            raise ValueError("prompt must include either a rubric or reference_model")
+        reference_model = None
+        if "expected_tier" in value and value["expected_tier"] != rubric.expected_tier:
+            raise ValueError(f"prompt {value.get('id')} has an incorrect expected_tier")
+
+    rationale = value.get("reference_rationale")
+    if rationale is not None and (not isinstance(rationale, str) or not rationale.strip()):
+        raise ValueError("reference_rationale must be a non-empty string when provided")
+    boundary = value.get("boundary", False)
+    if not isinstance(boundary, bool):
+        raise ValueError("boundary must be a boolean")
+    return Prompt(
+        id=value["id"],
+        category=value["category"],
+        prompt=value["prompt"],
+        rubric=rubric,
+        boundary=boundary,
+        reference_model=reference_model,
+        reference_rationale=rationale,
+    )

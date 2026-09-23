@@ -5,14 +5,14 @@
 
 **Which AI model should handle this coding task?** This benchmark measures how well different *model routers* answer that question.
 
-A model router reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. A bad router either wastes money (always picks the biggest model) or hurts quality (sends hard tasks to a weak one). This repo gives every router the **same 30 realistic coding prompts** and the **same three model choices**, then records **which model each router directly picked, how long it took, and how stable its answers are** — normalised into `LOW` / `MID` / `HIGH` tiers purely for scoring.
+A model router reads a developer's request and picks a model for it — cheap and fast for easy work, powerful for hard work. A bad router either wastes money (always picks the biggest model) or hurts quality (sends hard tasks to a weak one). This repo gives every router the **same prompt set** and **same three model choices**, then records **which model each router directly picked, how long it took, and how stable its answers are** — normalised into `LOW` / `MID` / `HIGH` tiers for analysis.
 
-> **Scope of v1:** routing decisions only. The selected model is never executed and no code quality is judged. Full design notes: [`PLAN.md`](PLAN.md).
+> **Scope of the current harness:** routing decisions only. It does not execute the selected model or judge task completion. The benchmark compares each router's model choice with a reference choice for the query. See the [benchmark review](BENCHMARK_REVIEW.md) for the prompt-set limitations and evaluation guidance.
 
 ## How it works
 
 ```
-30 prompts, each labelled LOW / MID / HIGH by a difficulty rubric
+30 prompts, each with a reference Claude model and a written rationale
               │
    ┌──────────┼──────────┐
    ▼          ▼          ▼
@@ -32,7 +32,7 @@ Routers answer with a **model name**, never a tier — whatever a router replies
 
 ### What is measured
 
-- **Rubric agreement** — did the router pick the tier the rubric expected? (deliberately not called "accuracy": expected tiers are human labels, not proven ground truth)
+- **Reference-model agreement** — did the router pick the model specified by the benchmark's reference routing policy? This measures agreement with that policy, not universal routing correctness.
 - **Under-routing** — hard task → weak model (quality risk)
 - **Over-routing** — easy task → strong model (cost waste)
 - **Decision latency** — mean / median / p95, of the routing call only
@@ -72,7 +72,7 @@ cat results/toy/summary.md
 
 The `summary.md` report is a table in this shape — run the commands above to fill it with your own numbers:
 
-| Router | Rubric agreement | Under-route | Over-route | Median route ms | Stability | Failures |
+| Router | Reference-model agreement | Under-route | Over-route | Median route ms | Stability | Failures |
 |---|---:|---:|---:|---:|---:|---:|
 | pi-auto-router | …% | …% | …% | … | …% | …/30 |
 
@@ -84,7 +84,7 @@ Plus a per-category agreement table and a list of prompts where the router gave 
 export PI_AUTO_ROUTER_COMMAND='<command for router 1>'
 export PI_MODEL_ROUTER_COMMAND='<command for router 2>'
 export PI_JEV_ROUTER_COMMAND='<command for router 3>'
-python3 -m benchmark.runner --prompts prompts/dev_v1.jsonl --runs 3 --output results/run-001
+python3 -m benchmark.runner --prompts prompts/dev_v2.jsonl --runs 3 --output results/run-001
 ```
 
 30 prompts × 3 routers × 3 repetitions = 270 decisions. Since models are never executed, this costs nothing beyond what the routers themselves charge.
@@ -111,9 +111,20 @@ To add a router: subclass `RouterAdapter` in `benchmark/adapters/` (set `name` a
 
 ## The prompt set
 
-`prompts/dev_v1.jsonl` has 30 prompts — 10 LOW, 10 MID, 10 HIGH — across ten task types (Q&A, features, debugging, tests, DevOps, refactoring, review, architecture, security, docs). Expected tiers come from a rubric scoring each prompt 0–2 on reasoning depth, scope, context, risk, and specialised knowledge (total 0–3 → LOW, 4–7 → MID, 8–10 → HIGH); the runner validates labels against it on load.
+`prompts/dev_v2.jsonl` is the default set: 30 realistic software-development work requests with explicit reference model and rationale, balanced 10 Haiku / 10 Sonnet / 10 Opus. V1 remains available as a legacy baseline and derives the reference tier from a rubric. The `reference_model` and `reference_rationale` fields are stored for scoring and analysis; only the prompt text is sent to the router.
 
-The set is **versioned benchmark data**: once results are published, `dev_v1` is frozen and changes go into `dev_v2`.
+Prompt files are **versioned benchmark data**: once results are published for a version, keep that file immutable and put revisions in the next version.
+
+### Domain-specific prompt sets
+
+Quant development and machine-learning engineering are separate datasets so their routing patterns can be inspected independently:
+
+```bash
+python3 -m benchmark.runner --prompts prompts/quant_dev_v2.jsonl --output results/quant-dev-v2
+python3 -m benchmark.runner --prompts prompts/mle_dev_v2.jsonl --output results/mle-dev-v2
+```
+
+Each v2 set has 30 prompts, balanced 10 / 10 / 10 across reference models, with detailed task context, constraints, and acceptance criteria. Quant prompts cover market data, research validity, signals, execution, portfolio risk, and controls. MLE prompts cover data quality, feature pipelines, training, evaluation, serving, and operations. They are original, task-shaped prompts informed by common engineering work; they are not verbatim items imported from public benchmarks. See [prompt documentation](prompts/README.md) and the [benchmark review](BENCHMARK_REVIEW.md) for provenance and interpretation limits.
 
 ## Interpreting results
 
@@ -121,7 +132,7 @@ There is no single "winner" metric. Under-routing costs quality, over-routing co
 
 ## Roadmap
 
-1. **Routing fingerprint** (this repo) — same prompts, same choices → which tier, how fast, how stable ✅
+1. **Routing fingerprint** (this repo) — same prompts, same choices → which model, how fast, how stable ✅
 2. **Empirical sufficiency** — actually run all three models on a subset; find the *cheapest model that passes*; score routers against that
 3. **Cost / latency / quality frontier** — add tokens, cost, task success
 4. **Repository-aware tasks** — multi-file fixes, CI repair, refactors
@@ -137,7 +148,7 @@ python3 -m pytest
 Contributions welcome — especially:
 
 - **New router adapters** — see [Plugging in your own router](#plugging-in-your-own-router)
-- **Rubric label reviews** — open an issue rather than editing `prompts/dev_v1.jsonl`; the set is frozen and changes go into `dev_v2`
+- **Reference-label reviews** — keep published versions immutable and put reviewed changes in a new prompt-set version
 - **Benchmark results** — include the run's `metadata.json` so results are reproducible
 
 ## License

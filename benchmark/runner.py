@@ -47,11 +47,13 @@ def make_decision(router_name: str, prompt: Prompt, repeat: int, result, run_id:
         "prompt_id": prompt.id,
         "category": prompt.category,
         "expected_tier": prompt.expected_tier,
+        "reference_model": prompt.expected_model,
+        "reference_rationale": prompt.reference_rationale,
         "selected_model": result.selected_model,
         "selected_tier": selected_tier,
         "routing_ms": result.routing_ms,
         "repeat": repeat,
-        "match": selected_tier == prompt.expected_tier if selected_tier else False,
+        "match": result.selected_model == prompt.expected_model if result.selected_model else False,
         "tier_delta": selected_index - expected_index if selected_index is not None else None,
         "error": result.error,
     }
@@ -66,7 +68,7 @@ def git_commit() -> str | None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--prompts", default="prompts/dev_v1.jsonl", type=Path)
+    parser.add_argument("--prompts", default="prompts/dev_v2.jsonl", type=Path)
     parser.add_argument("--runs", type=int)
     parser.add_argument("--output", type=Path, default=Path("results/run-001"))
     parser.add_argument("--router", choices=sorted(ADAPTERS), help="run only one router")

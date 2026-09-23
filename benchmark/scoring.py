@@ -26,6 +26,7 @@ def score_decisions(decisions: Iterable[dict]) -> dict:
         "failure_count": len(rows) - len(successful),
         "failure_rate": (len(rows) - len(successful)) / len(rows) if rows else 0.0,
         "rubric_agreement": sum(row.get("match", False) for row in successful) / len(successful) if successful else None,
+        "reference_model_agreement": sum(row.get("match", False) for row in successful) / len(successful) if successful else None,
         "under_route_rate": len(under) / len(successful) if successful else None,
         "over_route_rate": len(over) / len(successful) if successful else None,
         "under_route_severity": sum(-row["tier_delta"] for row in under),
@@ -48,4 +49,3 @@ def percentile(values: list[float], percentile_value: int) -> float:
     upper = min(lower + 1, len(ordered) - 1)
     fraction = position - lower
     return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
-

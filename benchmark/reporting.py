@@ -30,7 +30,7 @@ def write_summary(output_dir: Path, decisions: list[dict]) -> dict:
 
 
 def to_markdown(summary: dict) -> str:
-    lines = ["# Pi Model Router Benchmark", "", "Agreement is measured against the human authored rubric. Failed calls are excluded from agreement and routing distribution, and reported separately.", "", "| Router | Rubric agreement | Under-route | Over-route | Median route ms | Stability | Failures |", "|---|---:|---:|---:|---:|---:|---:|"]
+    lines = ["# Pi Model Router Benchmark", "", "Reference-model agreement compares the selected model with the reference choice in the prompt set. When no explicit reference model is stored, the reference is derived from the prompt rubric. Failed calls are excluded from agreement and routing distribution, and reported separately.", "", "| Router | Reference-model agreement | Under-route | Over-route | Median route ms | Stability | Failures |", "|---|---:|---:|---:|---:|---:|---:|"]
     for router, metrics in summary["routers"].items():
         lines.append("| {router} | {agreement} | {under} | {over} | {median} | {stability} | {failures} |".format(
             router=router,
@@ -42,7 +42,7 @@ def to_markdown(summary: dict) -> str:
             failures=f'{metrics["failure_count"]}/{metrics["total_decisions"]}',
         ))
     categories = sorted({category for metrics in summary["routers"].values() for category in metrics["categories"]})
-    lines += ["", "## Category rubric agreement", "", "| Router | " + " | ".join(categories) + " |", "|---|" + "---:|" * len(categories)]
+    lines += ["", "## Category reference-model agreement", "", "| Router | " + " | ".join(categories) + " |", "|---|" + "---:|" * len(categories)]
     for router, metrics in summary["routers"].items():
         lines.append("| " + router + " | " + " | ".join(fmt_pct(metrics["categories"].get(category, {}).get("rubric_agreement")) for category in categories) + " |")
     lines += ["", "## Unstable prompts", ""]
