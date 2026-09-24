@@ -16,17 +16,27 @@ from benchmark.models import AVAILABLE_MODELS, RouteResult, normalize_model_name
 class RouterAdapter(ABC):
     name: str
     command_env: str
+    is_baseline = False
 
-    def __init__(self, timeout_seconds: float | None = None):
+    def __init__(self, timeout_seconds: float | None = None, options: dict | None = None):
         self._configured_timeout_seconds = timeout_seconds
+        self.options = dict(options or {})
 
-    def route(self, prompt: str, available_models: list[str]) -> RouteResult:
+    def unavailable_reason(self) -> str | None:
+        """Return why this adapter should be skipped entirely, or None to run it."""
+        return None
+
+    def run_metadata(self) -> dict[str, Any]:
+        """Settings recorded in metadata.json; `model` is the exact model id this router itself calls, if known."""
+        return {"model": self.options.get("model")}
+
+    def route(self, prompt: str, available_models: list[str], context: dict | None = None) -> RouteResult:
         started = time.perf_counter()
         command = os.environ.get(self.command_env)
         if not command:
             return RouteResult(None, None, elapsed_ms(started), error="configuration_error: set " + self.command_env)
         try:
-            parsed = self._invoke(shlex.split(command), prompt, available_models)
+            parsed = self._invoke(shlex.split(command), prompt, available_models, context)
             selected = parsed.get("selected_model", parsed.get("model", parsed.get("tier"))) if isinstance(parsed, dict) else parsed
             model, tier = normalize_model_name(selected)
             return RouteResult(model, tier, elapsed_ms(started), raw_output=parsed)
@@ -41,8 +51,11 @@ class RouterAdapter(ABC):
         except Exception as exc:  # keep one broken router from aborting a run
             return RouteResult(None, None, elapsed_ms(started), error=f"router_error: {exc}")
 
-    def _invoke(self, command: list[str], prompt: str, available_models: list[str]) -> Any:
-        payload = json.dumps({"prompt": prompt, "available_models": available_models})
+    def _invoke(self, command: list[str], prompt: str, available_models: list[str], context: dict | None = None) -> Any:
+        request = {"prompt": prompt, "available_models": available_models}
+        if context is not None:
+            request["context"] = context
+        payload = json.dumps(request)
         completed = subprocess.run(command, input=payload, text=True, capture_output=True, timeout=self.timeout_seconds)
         if completed.returncode != 0:
             raise OSError(completed.stderr.strip() or f"command exited with {completed.returncode}")

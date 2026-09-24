@@ -7,6 +7,40 @@ low = "claude-haiku"
 mid = "claude-sonnet"
 high = "claude-opus"
 
+# Exact API model ids behind each canonical candidate. Recorded in metadata.json for every run.
+# Reference labels are tied to this model generation; re-review them when these ids change.
+[model_ids]
+claude-haiku = "claude-haiku-4-5"
+claude-sonnet = "claude-sonnet-5"
+claude-opus = "claude-opus-5"
+
+# Anthropic first-party list prices, USD per million tokens, for the ids above (checked 2026-09-24;
+# verify before publishing results). Used only for cost-weighted error. Only price ratios matter.
+[prices.claude-haiku]
+input_per_mtok = 1.00
+output_per_mtok = 5.00
+
+[prices.claude-sonnet]
+input_per_mtok = 2.00
+output_per_mtok = 10.00
+
+[prices.claude-opus]
+input_per_mtok = 5.00
+output_per_mtok = 25.00
+
+# ASSUMPTION, NOT MEASURED DATA: target share of LOW / MID / HIGH reference tiers in a realistic
+# workload. Every agreement and error metric is also reported reweighted to these shares.
+# Shares must sum to 1.
+[weighting]
+low = 0.6
+mid = 0.3
+high = 0.1
+
+# 95% bootstrap confidence intervals: resample prompts with replacement.
+[bootstrap]
+iterations = 2000
+seed = 12345
+
 [routers.auto]
 enabled = true
 
@@ -15,3 +49,27 @@ enabled = true
 
 [routers.jev]
 enabled = true
+
+# Built-in baselines. Disabled by default; `--baselines` runs all of them regardless of `enabled`.
+[routers.always_low]
+enabled = false
+
+[routers.always_mid]
+enabled = false
+
+[routers.always_high]
+enabled = false
+
+[routers.random]
+enabled = false
+seed = 20260924
+
+[routers.length_heuristic]
+enabled = false
+
+# The LOW-tier model (model_ids.claude-haiku unless `model` is set here) routing via one API call.
+# Skipped with a message when the key variable is unset. Remove `temperature` if a model rejects it.
+[routers.llm_low]
+enabled = false
+api_key_env = "ANTHROPIC_API_KEY"
+temperature = 0

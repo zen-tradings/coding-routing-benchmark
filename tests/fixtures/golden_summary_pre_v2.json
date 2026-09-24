@@ -1,0 +1,191 @@
+{
+  "routers": {
+    "r-a": {
+      "categories": {
+        "design": {
+          "failure_count": 0,
+          "failure_rate": 0.0,
+          "mean_routing_ms": 6.0,
+          "mean_stability": 0.5,
+          "median_routing_ms": 6.0,
+          "over_route_rate": 0.0,
+          "over_route_severity": 0,
+          "p95_routing_ms": 7.8,
+          "reference_model_agreement": 0.0,
+          "rubric_agreement": 0.0,
+          "successful_decisions": 2,
+          "tier_distribution": {
+            "HIGH": 0.0,
+            "LOW": 0.5,
+            "MID": 0.5
+          },
+          "total_decisions": 2,
+          "under_route_rate": 1.0,
+          "under_route_severity": 3,
+          "unstable_prompts": [
+            "p4"
+          ]
+        },
+        "impl": {
+          "failure_count": 1,
+          "failure_rate": 0.5,
+          "mean_routing_ms": 5003.0,
+          "mean_stability": 1.0,
+          "median_routing_ms": 5003.0,
+          "over_route_rate": 0.0,
+          "over_route_severity": 0,
+          "p95_routing_ms": 9500.3,
+          "reference_model_agreement": 1.0,
+          "rubric_agreement": 1.0,
+          "successful_decisions": 1,
+          "tier_distribution": {
+            "HIGH": 0.0,
+            "LOW": 0.0,
+            "MID": 1.0
+          },
+          "total_decisions": 2,
+          "under_route_rate": 0.0,
+          "under_route_severity": 0,
+          "unstable_prompts": []
+        },
+        "qa": {
+          "failure_count": 0,
+          "failure_rate": 0.0,
+          "mean_routing_ms": 8.0,
+          "mean_stability": 0.75,
+          "median_routing_ms": 8.0,
+          "over_route_rate": 0.75,
+          "over_route_severity": 5,
+          "p95_routing_ms": 10.7,
+          "reference_model_agreement": 0.25,
+          "rubric_agreement": 0.25,
+          "successful_decisions": 4,
+          "tier_distribution": {
+            "HIGH": 0.5,
+            "LOW": 0.25,
+            "MID": 0.25
+          },
+          "total_decisions": 4,
+          "under_route_rate": 0.0,
+          "under_route_severity": 0,
+          "unstable_prompts": [
+            "p1"
+          ]
+        }
+      },
+      "failure_count": 1,
+      "failure_rate": 0.125,
+      "mean_routing_ms": 1256.25,
+      "mean_stability": 0.75,
+      "median_routing_ms": 7.5,
+      "over_route_rate": 0.42857142857142855,
+      "over_route_severity": 5,
+      "p95_routing_ms": 6503.850000000004,
+      "reference_model_agreement": 0.2857142857142857,
+      "rubric_agreement": 0.2857142857142857,
+      "successful_decisions": 7,
+      "tier_distribution": {
+        "HIGH": 0.2857142857142857,
+        "LOW": 0.2857142857142857,
+        "MID": 0.42857142857142855
+      },
+      "total_decisions": 8,
+      "under_route_rate": 0.2857142857142857,
+      "under_route_severity": 3,
+      "unstable_prompts": [
+        "p1",
+        "p4"
+      ]
+    },
+    "r-b": {
+      "categories": {
+        "design": {
+          "failure_count": 0,
+          "failure_rate": 0.0,
+          "mean_routing_ms": 4.25,
+          "mean_stability": 1.0,
+          "median_routing_ms": 4.25,
+          "over_route_rate": 0.0,
+          "over_route_severity": 0,
+          "p95_routing_ms": 4.475,
+          "reference_model_agreement": 1.0,
+          "rubric_agreement": 1.0,
+          "successful_decisions": 2,
+          "tier_distribution": {
+            "HIGH": 1.0,
+            "LOW": 0.0,
+            "MID": 0.0
+          },
+          "total_decisions": 2,
+          "under_route_rate": 0.0,
+          "under_route_severity": 0,
+          "unstable_prompts": []
+        },
+        "impl": {
+          "failure_count": 0,
+          "failure_rate": 0.0,
+          "mean_routing_ms": 3.25,
+          "mean_stability": 1.0,
+          "median_routing_ms": 3.25,
+          "over_route_rate": 1.0,
+          "over_route_severity": 2,
+          "p95_routing_ms": 3.475,
+          "reference_model_agreement": 0.0,
+          "rubric_agreement": 0.0,
+          "successful_decisions": 2,
+          "tier_distribution": {
+            "HIGH": 1.0,
+            "LOW": 0.0,
+            "MID": 0.0
+          },
+          "total_decisions": 2,
+          "under_route_rate": 0.0,
+          "under_route_severity": 0,
+          "unstable_prompts": []
+        },
+        "qa": {
+          "failure_count": 0,
+          "failure_rate": 0.0,
+          "mean_routing_ms": 1.75,
+          "mean_stability": 1.0,
+          "median_routing_ms": 1.75,
+          "over_route_rate": 0.0,
+          "over_route_severity": 0,
+          "p95_routing_ms": 2.425,
+          "reference_model_agreement": 1.0,
+          "rubric_agreement": 1.0,
+          "successful_decisions": 4,
+          "tier_distribution": {
+            "HIGH": 0.0,
+            "LOW": 1.0,
+            "MID": 0.0
+          },
+          "total_decisions": 4,
+          "under_route_rate": 0.0,
+          "under_route_severity": 0,
+          "unstable_prompts": []
+        }
+      },
+      "failure_count": 0,
+      "failure_rate": 0.0,
+      "mean_routing_ms": 2.75,
+      "mean_stability": 1.0,
+      "median_routing_ms": 2.75,
+      "over_route_rate": 0.25,
+      "over_route_severity": 2,
+      "p95_routing_ms": 4.325,
+      "reference_model_agreement": 0.75,
+      "rubric_agreement": 0.75,
+      "successful_decisions": 8,
+      "tier_distribution": {
+        "HIGH": 0.5,
+        "LOW": 0.5,
+        "MID": 0.0
+      },
+      "total_decisions": 8,
+      "under_route_rate": 0.0,
+      "under_route_severity": 0,
+      "unstable_prompts": []
+    }
+  }
+}

@@ -1,0 +1,254 @@
+{
+  "results": [
+    {
+      "category": "qa",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-001",
+      "reference_model": "claude-haiku",
+      "reference_rationale": "Direct lookup.",
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "qa",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-001",
+      "reference_model": "claude-haiku",
+      "reference_rationale": "Direct lookup.",
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "qa",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-002",
+      "reference_model": "claude-haiku",
+      "reference_rationale": "Common knowledge.",
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "qa",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-002",
+      "reference_model": "claude-haiku",
+      "reference_rationale": "Common knowledge.",
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "implementation",
+      "error": null,
+      "expected_tier": "MID",
+      "match": true,
+      "prompt_id": "fx-003",
+      "reference_model": "claude-sonnet",
+      "reference_rationale": "One component with several constraints.",
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": "claude-sonnet",
+      "selected_tier": "MID",
+      "tier_delta": 0
+    },
+    {
+      "category": "implementation",
+      "error": null,
+      "expected_tier": "MID",
+      "match": true,
+      "prompt_id": "fx-003",
+      "reference_model": "claude-sonnet",
+      "reference_rationale": "One component with several constraints.",
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": "claude-sonnet",
+      "selected_tier": "MID",
+      "tier_delta": 0
+    },
+    {
+      "category": "implementation",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-004",
+      "reference_model": "claude-haiku",
+      "reference_rationale": null,
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "implementation",
+      "error": null,
+      "expected_tier": "LOW",
+      "match": true,
+      "prompt_id": "fx-004",
+      "reference_model": "claude-haiku",
+      "reference_rationale": null,
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": "claude-haiku",
+      "selected_tier": "LOW",
+      "tier_delta": 0
+    },
+    {
+      "category": "architecture",
+      "error": null,
+      "expected_tier": "HIGH",
+      "match": true,
+      "prompt_id": "fx-005",
+      "reference_model": "claude-opus",
+      "reference_rationale": "System-level trade-offs.",
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": "claude-opus",
+      "selected_tier": "HIGH",
+      "tier_delta": 0
+    },
+    {
+      "category": "architecture",
+      "error": null,
+      "expected_tier": "HIGH",
+      "match": true,
+      "prompt_id": "fx-005",
+      "reference_model": "claude-opus",
+      "reference_rationale": "System-level trade-offs.",
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": "claude-opus",
+      "selected_tier": "HIGH",
+      "tier_delta": 0
+    },
+    {
+      "category": "architecture",
+      "error": "invalid_model: unknown model selection: 'gpt-4'",
+      "expected_tier": "HIGH",
+      "match": false,
+      "prompt_id": "fx-006",
+      "reference_model": "claude-opus",
+      "reference_rationale": null,
+      "repeat": 1,
+      "router": "pi-auto-router",
+      "selected_model": null,
+      "selected_tier": null,
+      "tier_delta": null
+    },
+    {
+      "category": "architecture",
+      "error": "invalid_model: unknown model selection: 'gpt-4'",
+      "expected_tier": "HIGH",
+      "match": false,
+      "prompt_id": "fx-006",
+      "reference_model": "claude-opus",
+      "reference_rationale": null,
+      "repeat": 2,
+      "router": "pi-auto-router",
+      "selected_model": null,
+      "selected_tier": null,
+      "tier_delta": null
+    }
+  ],
+  "summary": {
+    "routers": {
+      "pi-auto-router": {
+        "categories": {
+          "architecture": {
+            "failure_count": 2,
+            "failure_rate": 0.5,
+            "mean_stability": 1.0,
+            "over_route_rate": 0.0,
+            "over_route_severity": 0,
+            "reference_model_agreement": 1.0,
+            "rubric_agreement": 1.0,
+            "successful_decisions": 2,
+            "tier_distribution": {
+              "HIGH": 1.0,
+              "LOW": 0.0,
+              "MID": 0.0
+            },
+            "total_decisions": 4,
+            "under_route_rate": 0.0,
+            "under_route_severity": 0,
+            "unstable_prompts": []
+          },
+          "implementation": {
+            "failure_count": 0,
+            "failure_rate": 0.0,
+            "mean_stability": 1.0,
+            "over_route_rate": 0.0,
+            "over_route_severity": 0,
+            "reference_model_agreement": 1.0,
+            "rubric_agreement": 1.0,
+            "successful_decisions": 4,
+            "tier_distribution": {
+              "HIGH": 0.0,
+              "LOW": 0.5,
+              "MID": 0.5
+            },
+            "total_decisions": 4,
+            "under_route_rate": 0.0,
+            "under_route_severity": 0,
+            "unstable_prompts": []
+          },
+          "qa": {
+            "failure_count": 0,
+            "failure_rate": 0.0,
+            "mean_stability": 1.0,
+            "over_route_rate": 0.0,
+            "over_route_severity": 0,
+            "reference_model_agreement": 1.0,
+            "rubric_agreement": 1.0,
+            "successful_decisions": 4,
+            "tier_distribution": {
+              "HIGH": 0.0,
+              "LOW": 1.0,
+              "MID": 0.0
+            },
+            "total_decisions": 4,
+            "under_route_rate": 0.0,
+            "under_route_severity": 0,
+            "unstable_prompts": []
+          }
+        },
+        "failure_count": 2,
+        "failure_rate": 0.16666666666666666,
+        "mean_stability": 1.0,
+        "over_route_rate": 0.0,
+        "over_route_severity": 0,
+        "reference_model_agreement": 1.0,
+        "rubric_agreement": 1.0,
+        "successful_decisions": 10,
+        "tier_distribution": {
+          "HIGH": 0.2,
+          "LOW": 0.6,
+          "MID": 0.2
+        },
+        "total_decisions": 12,
+        "under_route_rate": 0.0,
+        "under_route_severity": 0,
+        "unstable_prompts": []
+      }
+    }
+  }
+}

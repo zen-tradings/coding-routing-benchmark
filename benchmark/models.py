@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import Any
 
@@ -41,6 +42,7 @@ class Prompt:
     boundary: bool = False
     reference_model: str | None = None
     reference_rationale: str | None = None
+    context: dict[str, Any] | None = None
 
     @property
     def expected_tier(self) -> str:
@@ -140,6 +142,7 @@ def prompt_from_dict(value: dict[str, Any]) -> Prompt:
     boundary = value.get("boundary", False)
     if not isinstance(boundary, bool):
         raise ValueError("boundary must be a boolean")
+    context = validate_context(value["context"]) if "context" in value else None
     return Prompt(
         id=value["id"],
         category=value["category"],
@@ -148,4 +151,31 @@ def prompt_from_dict(value: dict[str, Any]) -> Prompt:
         boundary=boundary,
         reference_model=reference_model,
         reference_rationale=rationale,
+        context=context,
     )
+
+
+CONTEXT_FIELD_TYPES = {
+    "files_touched": "list of non-empty strings",
+    "has_tests": "boolean",
+    "repo_size_loc": "non-negative integer",
+}
+
+
+def validate_context(value: Any) -> dict[str, Any]:
+    """Validate the optional structured context object; unknown keys are allowed but must be JSON values."""
+    if not isinstance(value, dict) or not value:
+        raise ValueError("context must be a non-empty object")
+    files = value.get("files_touched")
+    if files is not None and (not isinstance(files, list) or not all(isinstance(item, str) and item.strip() for item in files)):
+        raise ValueError("context.files_touched must be a " + CONTEXT_FIELD_TYPES["files_touched"])
+    if "has_tests" in value and not isinstance(value["has_tests"], bool):
+        raise ValueError("context.has_tests must be a boolean")
+    loc = value.get("repo_size_loc")
+    if loc is not None and (not isinstance(loc, int) or isinstance(loc, bool) or loc < 0):
+        raise ValueError("context.repo_size_loc must be a " + CONTEXT_FIELD_TYPES["repo_size_loc"])
+    try:
+        json.dumps(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"context must be JSON-serializable: {exc}") from exc
+    return value

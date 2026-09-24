@@ -38,6 +38,13 @@ Routers answer with a **model name**, never a tier — whatever a router replies
 - **Decision latency** — mean / median / p95, of the routing call only
 - **Stability** — same answer across repeats?
 - **Per-category breakdown** and **failure rate** (timeouts, parse errors, unknown models — reported separately, never hidden)
+- **Tier distance** — how far off a wrong pick is (LOW=0, MID=1, HIGH=2), overall and split into under- and over-routing
+- **Cost-weighted error** — how much a wrong pick costs, relative to the reference model's price
+- **Reweighted metrics** — the same numbers with reference tiers weighted to an *assumed* realistic workload
+- **95% confidence intervals** and a note wherever two routers can't be told apart at this sample size
+- **Labeler agreement** — when a second set of labels exists, how much two labelers agree (Cohen's kappa)
+
+Built-in [baseline routers](#baseline-routers) run alongside the real routers, so every score has a floor to compare against.
 
 ## Quick start
 
@@ -72,11 +79,12 @@ cat results/toy/summary.md
 
 The `summary.md` report is a table in this shape — run the commands above to fill it with your own numbers:
 
-| Router | Reference-model agreement | Under-route | Over-route | Median route ms | Stability | Failures |
-|---|---:|---:|---:|---:|---:|---:|
-| pi-auto-router | …% | …% | …% | … | …% | …/30 |
+| Router | Agreement (95% CI) | Reweighted agreement | Mean tier distance | Cost-weighted error | Median route ms | Stability | Failures |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| pi-auto-router | …% (…–…) | …% | … | …% | … | …% | …/30 |
+| always_mid *(baseline)* | …% (…–…) | …% | … | …% | … | …% | …/30 |
 
-Plus a per-category agreement table and a list of prompts where the router gave inconsistent answers across repeats. No official results are published yet.
+Below that come a routing-errors table (under/over rates with CIs, reweighted values, cost ratio), per-category agreement, significance notes, a labeler-agreement section when a second label file exists, and the prompts where a router gave inconsistent answers across repeats. `summary.json` has the same data. No official results are published yet.
 
 ### Run the full comparison
 
@@ -89,7 +97,24 @@ python3 -m benchmark.runner --prompts prompts/dev_v2.jsonl --runs 3 --output res
 
 30 prompts × 3 routers × 3 repetitions = 270 decisions. Since models are never executed, this costs nothing beyond what the routers themselves charge.
 
-**CLI options:** `--prompts PATH` · `--runs N` · `--router {auto,model,jev}` (single router) · `--output DIR` · `--config PATH` (default `benchmark.toml`) · `--dry-run`.
+**CLI options:** `--prompts PATH` (default `$ROUTING_BENCHMARK_PROMPTS`, else `prompts/dev_v2.jsonl`) · `--runs N` · `--router NAME` (single router) · `--baselines` (also run every baseline) · `--output DIR` · `--config PATH` (default `benchmark.toml`) · `--dry-run`.
+
+### Baseline routers
+
+Baselines need no external command. They are registered in `benchmark.toml` with `enabled = false`, so a default run still uses only the configured routers. `--baselines` adds all of them to whatever else runs:
+
+```bash
+python3 -m benchmark.runner --baselines --runs 1 --output results/baselines
+```
+
+| Baseline | Picks |
+|---|---|
+| `always_low` / `always_mid` / `always_high` | the same model every time |
+| `random` | a uniformly random model; seeded by `[routers.random] seed`, which is recorded in `metadata.json` |
+| `length_heuristic` | the [toy router](#try-it-with-a-toy-router) logic: `design`/`architecture` → Opus, over 200 characters → Sonnet, otherwise Haiku |
+| `llm_low` | the LOW-tier model (`model_ids.claude-haiku`) asked to route, one Messages API call per decision using only the standard library. Needs `ANTHROPIC_API_KEY`; without it the router is skipped with a message and listed as skipped in the summary. Each call is billed at Haiku rates. |
+
+Baselines are marked *(baseline)* in every summary table and `"baseline": true` in `summary.json`. A candidate router that can't beat `always_mid` or `length_heuristic` on a set adds no information on that set.
 
 ## Plugging in your own router
 
@@ -99,13 +124,17 @@ The built-in adapters run the command in their environment variable once per dec
 {"prompt": "…", "available_models": ["claude-haiku", "claude-sonnet", "claude-opus"]}
 ```
 
-and answers on **stdout** with either a bare string (`sonnet`, `HIGH`) or JSON (`{"selected_model": "claude-3-5-sonnet"}`).
+If a prompt has an optional [`context`](prompts/README.md#optional-structured-context) object, the payload also has a `"context"` key. Prompts without one send exactly the payload above, so existing routers keep working.
+
+The router answers on **stdout** with either a bare string (`sonnet`, `HIGH`) or JSON (`{"selected_model": "claude-3-5-sonnet"}`).
 
 | Adapter | Env var |
 |---|---|
 | `auto` | `PI_AUTO_ROUTER_COMMAND` |
 | `model` | `PI_MODEL_ROUTER_COMMAND` |
 | `jev` | `PI_JEV_ROUTER_COMMAND` |
+
+If your router calls a model, set `model = "<exact model id>"` in its `[routers.<name>]` block so the id is recorded in `metadata.json`.
 
 To add a router: subclass `RouterAdapter` in `benchmark/adapters/` (set `name` and `command_env`, or override `route()`), register it in the `ADAPTERS` dict, and add a `[routers.<name>]` block to `benchmark.toml`.
 
@@ -114,6 +143,10 @@ To add a router: subclass `RouterAdapter` in `benchmark/adapters/` (set `name` a
 `prompts/dev_v2.jsonl` is the default set: 30 realistic software-development work requests with explicit reference model and rationale, balanced 10 Haiku / 10 Sonnet / 10 Opus. V1 remains available as a legacy baseline and derives the reference tier from a rubric. The `reference_model` and `reference_rationale` fields are stored for scoring and analysis; only the prompt text is sent to the router.
 
 Prompt files are **versioned benchmark data**: once results are published for a version, keep that file immutable and put revisions in the next version.
+
+**Reference labels are tied to a model generation.** A label says which of the *current* Haiku, Sonnet, and Opus should handle a task. When those models are updated, the right choice for some prompts can change. Every run records the exact model id behind each candidate (`[model_ids]` in `benchmark.toml`), each router's configured model, the repo's git SHA, and whether the working tree was dirty. Compare results only across runs with the same model ids, and re-review labels in a new prompt-set version when the ids change.
+
+**Second labels, held-out sets, and context.** A set can have an optional second-labeler file (`<set>.labels_b.jsonl`) for measuring label reliability. You can keep a private held-out set that is never committed, under `prompts/private/` or outside the repo; `metadata.json` then records `"held_out": true`. Future prompt versions can carry a structured `context` object. Formats and workflow are in the [prompt documentation](prompts/README.md).
 
 ### Domain-specific prompt sets
 
@@ -130,12 +163,39 @@ Each v2 set has 30 prompts, balanced 10 / 10 / 10 across reference models, with 
 
 There is no single "winner" metric. Under-routing costs quality, over-routing costs money — which matters more depends on you. A router's tier distribution (how often it picks LOW vs. MID vs. HIGH) is its *fingerprint*, not a score.
 
+How to read the numbers:
+
+- **Agreement (95% CI)** — the share of successful decisions that match the reference, with a bootstrap interval. Prompts are resampled with all their repeats together, 2000 iterations, seeded from `[bootstrap]`. With 30 prompts the intervals are wide; read agreement as a range, not a point.
+- **Significance notes** — for each pair of routers, the report says whether their agreement intervals overlap. Overlap means the difference is not established at this sample size. It is a conservative check, not a formal test.
+- **Mean tier distance** — 0 is perfect, 2 is always the opposite extreme. It separates a router that misses by one tier from one that sends Opus work to Haiku. *Under distance* and *over distance* split it by direction and add up to the total.
+- **Cost-weighted error** — the mean of |chosen price − reference price| / reference price, using the `[prices]` block in `benchmark.toml` (input + output list price per million tokens; only ratios between models matter). It is asymmetric by construction: over-routing Haiku work to Opus costs +400%, while under-routing Opus work to Haiku can't go below −80%. **Cost ratio** (total chosen price / total reference price) shows net over- or under-spend.
+- **Reweighted** — the v2 sets are balanced 10/10/10, but real traffic is mostly easy work. Reweighted values average each reference tier separately, then combine the tiers with the `[weighting]` shares (default LOW 0.6 / MID 0.3 / HIGH 0.1). **These shares are an assumption, not measured data.** Change them to match your own traffic. Under reweighting, `always_low` looks much better and `always_high` much worse than in the balanced numbers; that gap is the point.
+- **Labeler agreement** — with a second label file, Cohen's kappa shows how much of the labelers' agreement is beyond chance. Router agreement on consensus-only prompts removes prompts whose labels are themselves disputed.
+
 ## Roadmap
 
 1. **Routing fingerprint** (this repo) — same prompts, same choices → which model, how fast, how stable ✅
 2. **Empirical sufficiency** — actually run all three models on a subset; find the *cheapest model that passes*; score routers against that
 3. **Cost / latency / quality frontier** — add tokens, cost, task success
 4. **Repository-aware tasks** — multi-file fixes, CI repair, refactors
+
+## Known limitations and open work
+
+**Benchmark validity**
+
+1. **Sample size.** 30 prompts per set gives wide confidence intervals (about ±17 points on agreement), too wide to rank most routers. Around 100+ prompts per set would be needed to tell routers apart.
+2. **Single labeler.** Reference labels come from one author. Second-labeler support exists, but no `<set>.labels_b.jsonl` file has been written yet.
+3. **Agreement, not accuracy.** Reference choices are policy judgments. Empirical sufficiency (roadmap step 2) is needed before any score can be called routing accuracy.
+4. **Boundary flags are unused.** v1 prompts carry `boundary: true`, but results are not yet reported with and without boundary prompts, and v2 has no boundary flags.
+5. **Subprocess latency.** External routers start a new process per decision, so `routing_ms` includes interpreter start-up, not just routing time.
+
+**Engineering**
+
+6. **No re-scoring command.** Summaries can't be rebuilt from an existing `results.jsonl`, for example after adding second labels or changing prices; a full re-run is required.
+7. **No CI.** Tests are not run automatically on push.
+8. **Docs drift.** `BENCHMARK_REVIEW.md` is linked but missing, and the `doc/` site lags this README.
+9. **Fixed model pool.** Configuration accepts exactly Haiku, Sonnet, and Opus; adding models or providers needs code changes.
+10. **No retries in `llm_low`.** A rate limit or transient server error is recorded as a failed decision.
 
 ## Development
 

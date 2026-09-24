@@ -9,3 +9,6 @@ dist/
 # benchmark run outputs — keep the folder, not the data
 results/*
 !results/.gitkeep
+
+# held-out prompt sets and their second labels — never commit
+prompts/private/
